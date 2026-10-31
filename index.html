@@ -2,8 +2,15 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>برنامج صالون الحلاقة</title>
+<style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
+<title>BarbarApp</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3c72">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 :root{--bg:#f4f5f8;--card:#fff;--tx:#23262e;--mut:#727887;--pri:#3a5a8c;--pri2:#e8eef7;--bd:#dfe3ec;--bad:#b3392f;--ok:#2f7d4f}
 *{box-sizing:border-box}
@@ -58,7 +65,10 @@ td input,td select{padding:5px 8px;width:auto;min-width:70px}
   #wReg .grid,#wAdd .grid{grid-template-columns:repeat(2,1fr);gap:0 10px}
   #wReg .grid input,#wReg .grid select,#wAdd .grid input{padding:9px 8px;font-size:14px;min-width:0}
 }
-
+.login-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;direction:ltr}
+.login-head h1{margin:0;direction:rtl}
+.login-head .lang-btn{padding:8px 12px;order:-1}
+[dir=ltr] .login-head h1{direction:ltr}
 
 /* ===== زر تثبيت التطبيق (أسفل النافذة) ===== */
 #installBar {
@@ -92,7 +102,13 @@ body.has-install-bar { padding-bottom: 80px; }
 
 <!-- تسجيل الدخول -->
 <div id="vLogin" class="card login">
-  <h1>برنامج صالون الحلاقة</h1>
+  <div class="login-head">
+    <h1>برنامج صالون الحلاقة</h1>
+    <button type="button" class="sec lang-btn lang-toggle" onclick="toggleLang()" aria-label="Language">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span class="langTxt">EN</span>
+    </button>
+  </div>
   <div class="mut">سجّل الدخول، وإن كان رقمك جديداً سيتم إنشاء حسابك بفترة تجريبية 5 أيام</div>
   <label>رقم الهاتف</label>
   <input id="lp" type="tel" inputmode="numeric" autocomplete="off" name="b_phone">
