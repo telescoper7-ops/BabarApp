@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج صالون الحلاقة</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--tx:#23262e;--mut:#727887;--pri:#3a5a8c;--pri2:#e8eef7;--bd:#dfe3ec;--bad:#b3392f;--ok:#2f7d4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:0 0 12px}
+.mut{color:var(--mut);font-size:13px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--pri);color:#fff}
+button:disabled{opacity:.6;cursor:default}
+button.sec{background:var(--pri2);color:var(--pri)}
+button.on{background:var(--pri);color:#fff}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 14px}
+.login{max-width:380px;margin:8vh auto}
+.msg{color:var(--bad);margin-top:10px;min-height:20px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th{color:var(--mut);font-weight:600}
+td input,td select{padding:5px 8px;width:auto;min-width:70px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--pri2);border-radius:12px;padding:14px}
+.stat b{display:block;font-size:22px;color:var(--pri)}
+.hide{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.top-btns{display:flex;gap:8px;align-items:center}
+.lang-btn{display:inline-flex;align-items:center;gap:6px}
+.wa{display:inline-block;margin-top:14px;background:#25a244;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none}
+#loader{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px)}
+#loader.on{display:flex}
+.spin{width:54px;height:54px;border:5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ico{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:var(--pri2);color:var(--pri);transition:.15s}
+.ico:hover{background:var(--pri);color:#fff}
+.ico.del{color:var(--bad)}
+.ico.del:hover{background:var(--bad);color:#fff}
+.ico.ico-wa{color:#25a244}
+.ico.ico-wa:hover{background:#25a244;color:#fff}
+.actions{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+#tOrders .actions{display:grid;grid-template-columns:repeat(2,34px)}
+.save-cell{display:flex;align-items:flex-end}
+.save-cell button{padding:10px 16px;margin-top:10px;width:100%}
+[dir=ltr] th,[dir=ltr] td{text-align:left}
+#tOrders td.g{vertical-align:top;background:var(--card)}
+#tOrders tr.gs td{border-top:2px solid var(--bd)}
+#tOrders tr.gt td{background:var(--pri2);font-weight:600;border-bottom:2px solid var(--bd)}
+#tOrders tr.gt .lbl{color:var(--pri)}
+@media (max-width:600px){
+  #wReg .grid,#wAdd .grid{grid-template-columns:repeat(2,1fr);gap:0 10px}
+  #wReg .grid input,#wReg .grid select,#wAdd .grid input{padding:9px 8px;font-size:14px;min-width:0}
+}
+
+
+/* ===== زر تثبيت التطبيق (أسفل النافذة) ===== */
+#installBar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 2000;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(135deg, #0f2027, #2c5364);
+  box-shadow: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+}
+body.has-install-bar #bookConfirmBar { bottom: 62px; }
+#installBar.show { display: flex; }
+#installBar .install-text { font-size: 13px; font-weight: 600; }
+#installBar .install-btn {
+  background: linear-gradient(135deg, #047413, #099c1c);
+  color: #000; border: none; border-radius: 10px;
+  padding: 9px 18px; font-weight: 700; cursor: pointer;
+  font-family: 'Cairo', sans-serif; font-size: 14px;
+}
+body.has-install-bar { padding-bottom: 80px; }
+</style>
+</head>
+<body>
+<div id="loader"><div class="spin"></div></div>
+<div class="wrap">
+
+<!-- تسجيل الدخول -->
+<div id="vLogin" class="card login">
+  <h1>برنامج صالون الحلاقة</h1>
+  <div class="mut">سجّل الدخول، وإن كان رقمك جديداً سيتم إنشاء حسابك بفترة تجريبية 5 أيام</div>
+  <label>رقم الهاتف</label>
+  <input id="lp" type="tel" inputmode="numeric" autocomplete="off" name="b_phone">
+  <label>كلمة المرور</label>
+  <input id="lw" type="password" autocomplete="new-password" name="b_pass">
+  <div class="msg" id="lm"></div>
+  <button id="lb" onclick="doLogin()" style="width:100%;margin-top:6px">دخول</button>
+</div>
+
+<!-- انتهاء الفترة التجريبية -->
+<div id="vExp" class="card login hide" style="text-align:center">
+  <h2>انتهت الفترة التجريبية</h2>
+  <p>انتهت الفترة التجريبية للبرنامج. لشراء البرنامج الرجاء التواصل مع الرقم 95209623</p>
+  <a class="wa" id="buyLink" target="_blank">إرسال رسالة واتساب لشراء البرنامج</a>
+  <div style="margin-top:14px"><button class="sec" onclick="logout()">خروج</button></div>
+</div>
+
+<!-- التطبيق -->
+<div id="vApp" class="hide">
+  <div class="top">
+    <div><h1>الصالون</h1><div class="mut" id="who"></div></div>
+    <div class="top-btns">
+      <button class="sec lang-btn lang-toggle" onclick="toggleLang()" aria-label="Language">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span class="langTxt">EN</span>
+      </button>
+      <button class="sec" onclick="logout()">خروج</button>
+    </div>
+  </div>
+  <div class="nav" id="nav"></div>
+
+  <!-- تسجيل طلب -->
+  <div id="wReg" class="card hide">
+    <h2>تسجيل طلب</h2>
+    <div class="grid">
+      <div><label>رقم الخدمة</label><select id="rItem" onchange="pick()"></select></div>
+      <div><label>اسم الخدمة</label><input id="rName" readonly></div>
+      <div><label>السعر</label><input id="rPrice" type="number" step="any" oninput="calc()"></div>
+      <div><label>المدفوع</label><input id="rPaid" type="number" step="any" oninput="calc()"></div>
+      <div><label>الباقي</label><input id="rRest" readonly></div>
+      <div><label>اسم الزبون</label><input id="rCust"></div>
+      <div><label>رقم الهاتف</label><input id="rPhone" type="tel"></div>
+      <div><label>حالة الطلب</label><select id="rStat"></select></div>
+      <div class="save-cell"><button type="button" onclick="addLine()">إضافة</button></div>
+    </div>
+    <div class="tw hide" id="cartBox" style="margin-top:14px"><table id="tCart"></table></div>
+    <div class="msg" id="rm"></div>
+    <button id="saveBtn" class="hide" onclick="saveOrder()">حفظ الطلب</button>
+  </div>
+
+  <!-- الخدمات -->
+  <div id="wAdd" class="card hide">
+    <h2>إضافة خدمة</h2>
+    <div class="grid">
+      <div><label>اسم الخدمة</label><input id="aName"></div>
+      <div><label>السعر</label><input id="aPrice" type="number" step="any"></div>
+      <div class="save-cell"><button onclick="addItem()">إضافة</button></div>
+    </div>
+    <div class="msg" id="am"></div>
+    <div class="tw" style="margin-top:14px"><table id="tItems"></table></div>
+  </div>
+
+  <!-- الطلبات -->
+  <div id="wOrder" class="card hide">
+    <h2>الطلبات</h2>
+    <input id="q" placeholder="بحث باسم الزبون أو الهاتف أو الخدمة" oninput="drawOrders()" style="margin-bottom:10px">
+    <div class="tw"><table id="tOrders"></table></div>
+  </div>
+
+  <!-- التقارير -->
+  <div id="wReport" class="card hide">
+    <h2>التقارير</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <!-- المستخدمون -->
+  <div id="wUser" class="card hide">
+    <h2>المستخدمون</h2>
+    <div class="tw"><table id="tUsers"></table></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ شريط تثبيت التطبيق ============ -->
+<div id="installBar">
+  <span class="install-text" id="installText"></span>
+  <button class="install-btn" id="installBtn">تثبيت التطبيق📲</button>
+</div>
+<script>
+/* ============ روابط السكربتات الثلاثة (ضع رابط /exec لكل واحد) ============ */
+const API_USERS = 'https://script.google.com/macros/s/AKfycbxsVQ2_w1xLBtOFsRFUBLuF4aRbj1_fiTIBvrhj1hb1sSKX8z50fUlHxKE-QOZZDI0A/exec';   // 1_Users_Code.gs
+const API_ADD   = 'https://script.google.com/macros/s/AKfycbyfRSzhs-PW1WZqkiV2_9Exehox0B7KUoH9pbBAG2_KJZQ8rUM6lo4Oh_QSX6Owh7XJBA/exec';     // 2_Add_Code.gs
+const API_ORDER = 'https://script.google.com/macros/s/AKfycbzqSKzmc4WALE8sAkM7ahfkaSAPGUfWOMNZrAS-txs6pDFiE32-nv5lJBfAWaCkGypX/exec';   // 3_Order_Code.gs
+
+const ACTION_URL = {
+  items: API_ADD, addItem: API_ADD, updateItem: API_ADD, deleteItem: API_ADD,
+  saveOrder: API_ORDER, orders: API_ORDER, updateOrder: API_ORDER, deleteOrder: API_ORDER, report: API_ORDER,
+  users: API_USERS, setUser: API_USERS
+};
+
+const STAT = ['جديد','قيد التنفيذ','مكتمل'];
+const SEP = '،';
+let T = '', U = null, ITEMS = [], ORDERS = [], CART = [];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = n => (Math.round(Number(n) * 1000) / 1000).toLocaleString('en');
+const toNum = v => {
+  const s = String(v == null ? '' : v)
+    .replace(/[٠-٩]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x0660 + 48))
+    .replace(/[۰-۹]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x06F0 + 48))
+    .replace(/[\u066B\u066C,\s]/g, '')
+    .replace(/[^\d.\-]/g, '');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+};
+const r3 = n => Math.round(n * 1000) / 1000;
+
+$('buyLink').href = 'https://wa.me/96895209623?text=' + encodeURIComponent('أريد شراء برنامج صالون الحلاقة');
+
+/* ---------- اللودنج ---------- */
+let _loadT = null, _loadN = 0;
+function showLoading() {
+  _loadN++; clearTimeout(_loadT);
+  _loadT = setTimeout(() => { if (_loadN > 0) $('loader').classList.add('on'); }, 120);
+}
+function hideLoading() {
+  _loadN = Math.max(0, _loadN - 1);
+  if (_loadN === 0) { clearTimeout(_loadT); $('loader').classList.remove('on'); }
+}
+
+/* ---------- الاتصال ---------- */
+async function rpc(url, fn, args) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) });
+  return r.json();
+}
+async function call(action, data) {
+  const url = ACTION_URL[action];
+  if (!url) return { error: 'إجراء غير معروف: ' + action };
+  if (url.indexOf('PUT_') === 0) return { error: 'لم يتم تعيين رابط سكربت لهذا الإجراء: ' + action };
+  showLoading();
+  try {
+    const r = await rpc(url, 'api', [T, action, data]);
+    if (r && r.expired) { show('vExp'); return null; }
+    return r;
+  } catch (e) { return { error: 'تعذر الاتصال بالخادم' }; }
+  finally { hideLoading(); }
+}
+
+function show(v) { ['vLogin','vExp','vApp'].forEach(x => $(x).classList.toggle('hide', x !== v)); }
+
+/* ---------- حفظ بيانات الدخول محلياً ---------- */
+const CRED_KEY = 'barber_creds';
+function loadCreds() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CRED_KEY) || 'null');
+    if (!c) return;
+    if (c.phone) $('lp').value = c.phone;
+    if (c.pass) $('lw').value = c.pass;
+  } catch (e) {}
+}
+function saveCreds(phone, pass) { try { localStorage.setItem(CRED_KEY, JSON.stringify({ phone, pass })); } catch (e) {} }
+loadCreds();
+window.addEventListener('load', () => setTimeout(loadCreds, 150));
+
+async function doLogin() {
+  $('lm').textContent = ''; $('lb').disabled = true;
+  showLoading();
+  const phone = $('lp').value.trim(), pass = $('lw').value;
+  try {
+    const r = await rpc(API_USERS, 'login', [phone, pass]);
+    if (r.error) $('lm').textContent = r.error;
+    else if (!r.ok) $('lm').textContent = r.msg;
+    else {
+      saveCreds(phone, pass);
+      T = r.token; U = r.user;
+      if (r.expired) show('vExp'); else startApp();
+    }
+  } catch (e) {
+    $('lm').textContent = 'تعذر الاتصال بالخادم، تأكد من صحة API_USERS ومن نشر السكربت لـ Anyone';
+  } finally { hideLoading(); $('lb').disabled = false; }
+}
+function logout() { T = ''; U = null; CART = []; drawCart(); show('vLogin'); loadCreds(); }
+
+/* ---------- التنقل ---------- */
+const WINS = [['reg','wReg','التسجيل'],['order','wOrder','الطلبات'],['add','wAdd','الخدمات'],['report','wReport','التقارير'],['user','wUser','المستخدمون']];
+function startApp() {
+  show('vApp');
+  $('who').textContent = (U.name || U.phone) + ' — ' + (U.state === 'active' ? 'نسخة مفعّلة' : 'تجريبي حتى ' + U.expiry);
+  $('rStat').innerHTML = STAT.map(s => `<option value="${s}">${s}</option>`).join('');
+  $('nav').innerHTML = '';
+  const allowed = WINS.filter(w => U.perms[w[0]]);
+  allowed.forEach(w => {
+    const b = document.createElement('button');
+    b.className = 'sec'; b.id = 'n_' + w[1]; b.textContent = w[2];
+    b.onclick = () => open_(w[0], w[1]);
+    $('nav').appendChild(b);
+  });
+  if (allowed.length) open_(allowed[0][0], allowed[0][1]);
+}
+async function open_(k, id) {
+  WINS.forEach(w => { $(w[1]).classList.toggle('hide', w[1] !== id); const b = $('n_' + w[1]); if (b) b.className = w[1] === id ? 'on' : 'sec'; });
+  if (k === 'reg' || k === 'add') { const r = await call('items'); if (r && !r.error) { ITEMS = r.items; drawItems(); } }
+  if (k === 'order') { const r = await call('orders'); if (r && !r.error) { ORDERS = r.orders; drawOrders(); } }
+  if (k === 'report') drawReport();
+  if (k === 'user') drawUsers();
+}
+
+/* ============== الأيقونات ============== */
+const svg = (inner, sw) => `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const icoSave = svg('<polyline points="20 6 9 17 4 12"/>', 2.5);
+const icoDel = svg('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>');
+const icoPrint = svg('<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>');
+const icoWa = svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>');
+
+/* ============== الخدمات ============== */
+function drawItems() {
+  $('rItem').innerHTML = '<option value="">— اختر —</option>' +
+    ITEMS.map(i => `<option value="${esc(i.no)}">${esc(i.no)} - ${esc(i.name)} (${num(i.price)})</option>`).join('');
+  $('tItems').innerHTML =
+    '<tr><th>الرقم</th><th>الاسم</th><th>السعر</th><th>إجراءات</th></tr>' +
+    ITEMS.map(i => `<tr>
+      <td>${esc(i.no)}</td>
+      <td><input id="in_${esc(i.no)}" value="${esc(i.name)}" style="min-width:150px"></td>
+      <td><input id="ip_${esc(i.no)}" type="number" step="any" value="${i.price}" style="min-width:80px"></td>
+      <td><div class="actions">
+        <button class="ico" title="حفظ التعديل" onclick="saveItem('${esc(i.no)}')">${icoSave}</button>
+        <button class="ico del" title="حذف الخدمة" onclick="delItem('${esc(i.no)}')">${icoDel}</button>
+      </div></td></tr>`).join('');
+}
+async function addItem() {
+  $('am').style.color = ''; $('am').textContent = '';
+  if (!$('aName').value.trim()) { $('am').textContent = 'أدخل اسم الخدمة'; return; }
+  const r = await call('addItem', { name: $('aName').value, price: $('aPrice').value });
+  if (!r) return;
+  if (r.error) { $('am').textContent = r.error; return; }
+  $('am').style.color = 'var(--ok)'; $('am').textContent = 'تمت إضافة الخدمة';
+  ITEMS = r.items; drawItems();
+  ['aName', 'aPrice'].forEach(x => $(x).value = '');
+}
+async function saveItem(no) {
+  $('am').style.color = ''; $('am').textContent = '';
+  const r = await call('updateItem', { no, name: $('in_' + no).value, price: $('ip_' + no).value });
+  if (!r) return;
+  if (r.error) { $('am').textContent = r.error; return; }
+  $('am').style.color = 'var(--ok)'; $('am').textContent = 'تم تحديث الخدمة';
+  ITEMS = r.items; drawItems(); pick();
+}
+async function delItem(no) {
+  if (!confirm('حذف الخدمة رقم ' + no + '؟')) return;
+  $('am').style.color = ''; $('am').textContent = '';
+  const r = await call('deleteItem', { no });
+  if (!r) return;
+  if (r.error) { $('am').textContent = r.error; return; }
+  $('am').style.color = 'var(--ok)'; $('am').textContent = 'تم حذف الخدمة';
+  ITEMS = r.items; drawItems(); pick();
+}
+
+/* ============== تسجيل الطلب (سلة) ============== */
+function pick() {
+  const i = ITEMS.find(x => String(x.no) === $('rItem').value) || {};
+  $('rName').value = i.name || '';
+  $('rPrice').value = i.price != null ? i.price : '';
+  calc();
+}
+function calc() { $('rRest').value = num(toNum($('rPrice').value) - toNum($('rPaid').value)); }
+
+function addLine() {
+  $('rm').style.color = ''; $('rm').textContent = '';
+  const item = ITEMS.find(x => String(x.no) === $('rItem').value);
+  if (!item) { $('rm').textContent = 'اختر الخدمة أولاً'; return false; }
+  const price = toNum($('rPrice').value);
+  if (!(price > 0)) { $('rm').textContent = 'أدخل السعر'; return false; }
+  if (!String($('rCust').value || '').trim()) { $('rm').textContent = 'أدخل اسم الزبون'; return false; }
+  CART.push({
+    name: item.name, code: item.no, total: price, paid: toNum($('rPaid').value),
+    customer: $('rCust').value.trim(), phone: String($('rPhone').value || '').trim(), status: $('rStat').value
+  });
+  ['rItem', 'rPaid'].forEach(x => $(x).value = '');
+  pick(); drawCart();
+  return true;
+}
+function delLine(i) { CART.splice(i, 1); drawCart(); }
+function drawCart() {
+  const has = CART.length > 0;
+  $('cartBox').classList.toggle('hide', !has);
+  $('saveBtn').classList.toggle('hide', !has);
+  $('tCart').innerHTML =
+    '<tr><th>الخدمة</th><th>السعر</th><th>المدفوع</th><th>الباقي</th><th>الزبون</th><th></th></tr>' +
+    CART.map((l, i) => `<tr>
+      <td>${esc(l.code)} - ${esc(l.name)}</td><td>${num(l.total)}</td><td>${num(l.paid)}</td>
+      <td>${num(l.total - l.paid)}</td><td>${esc(l.customer)}</td>
+      <td><button class="ico del" type="button" title="حذف" onclick="delLine(${i})">${icoDel}</button></td></tr>`).join('');
+}
+
+/* الطلب كله يُحفظ في صف واحد، والخدمات مفصولة بـ ، */
+async function saveOrder() {
+  $('rm').style.color = ''; $('rm').textContent = '';
+  if ($('rItem').value && !addLine()) return;
+  if (!CART.length) { $('rm').textContent = 'أضف خدمة واحدة على الأقل'; return; }
+  const J = k => CART.map(l => l[k]).join(SEP);
+  const f = CART[0];
+  $('saveBtn').disabled = true;
+  showLoading();
+  try {
+    const r = await call('saveOrder', {
+      name: J('name'), code: J('code'), total: J('total'), paid: J('paid'),
+      customer: f.customer, phone: f.phone, status: f.status
+    });
+    if (!r) return;
+    if (r.error) { $('rm').style.color = 'var(--bad)'; $('rm').textContent = r.error; return; }
+    CART = []; drawCart();
+    ['rCust', 'rPhone'].forEach(x => $(x).value = '');
+    pick();
+    $('rm').style.color = 'var(--ok)'; $('rm').textContent = 'تم حفظ الطلب';
+  } finally { hideLoading(); $('saveBtn').disabled = false; }
+}
+
+/* ============== الطلبات ============== */
+const sp = s => String(s == null ? '' : s).split(SEP).map(x => x.trim());
+
+/* يفصل صف الشيت إلى خدماته: كل خدمة كائن مستقل */
+function expand(o) {
+  const codes = sp(o.code), names = sp(o.name), prices = sp(o.price), paids = sp(o.paid);
+  return codes.map((c, i) => {
+    const price = toNum(prices[i]), paid = toNum(paids[i]);
+    return { id: o.id, idx: i, date: o.date, customer: o.customer, phone: o.phone, status: o.status,
+      code: c, name: names[i] || '', price, paid, rest: r3(price - paid) };
+  });
+}
+function findGroup(id) { const o = ORDERS.find(x => x.id === id); return o ? expand(o) : []; }
+
+function drawOrders() {
+  const q = $('q').value.trim().toLowerCase();
+  const list = ORDERS.filter(o => !q || [o.customer, o.phone, o.name, o.id].join(' ').toLowerCase().includes(q));
+
+  const rows = list.map(order => {
+    const g = expand(order);
+    const f = g[0], n = g.length, gid = f.id;
+    const rs = n + (n > 1 ? 1 : 0);
+    const sum = k => g.reduce((s, o) => s + toNum(o[k]), 0);
+
+    const body = g.map((o, i) => {
+      let t = `<tr class="${i === 0 ? 'gs' : ''}">`;
+      if (i === 0) t += `<td class="g" rowspan="${rs}">${esc(f.id)}${n > 1 ? ' <span class="mut">(' + n + ')</span>' : ''}<div class="mut">${esc(f.date)}</div></td>`;
+      t += `
+        <td>${esc(o.name)}<div class="mut">رقم الخدمة: ${esc(o.code)}</div></td>
+        <td>${num(o.price)}</td>
+        <td><input type="number" step="any" value="${o.paid}" id="p_${esc(gid)}_${i}" style="min-width:80px"></td>
+        <td style="color:${o.rest > 0 ? 'var(--bad)' : 'var(--ok)'}">${num(o.rest)}</td>`;
+      if (i === 0) t += `
+        <td class="g" rowspan="${rs}">${esc(f.customer)}<div class="mut">${esc(f.phone)}</div></td>
+        <td class="g" rowspan="${rs}">
+          <select id="s_${esc(gid)}">${STAT.map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${s}</option>`).join('')}</select>
+        </td>
+        <td class="g" rowspan="${rs}"><div class="actions">
+          <button class="ico" title="حفظ التعديل" onclick="upd('${esc(gid)}')">${icoSave}</button>
+          <button class="ico" title="طباعة الفاتورة" onclick="printInvoice('${esc(gid)}')">${icoPrint}</button>
+          <button class="ico ico-wa" title="إرسال عبر واتساب" onclick="waOrder('${esc(gid)}')">${icoWa}</button>
+          <button class="ico del" title="حذف الطلب" onclick="delOrder('${esc(gid)}')">${icoDel}</button>
+        </div></td>`;
+      return t + '</tr>';
+    }).join('');
+
+    const totals = n > 1 ? `<tr class="gt">
+      <td class="lbl">المجموع</td>
+      <td>${num(sum('price'))}</td>
+      <td>${num(sum('paid'))}</td>
+      <td style="color:${sum('rest') > 0 ? 'var(--bad)' : 'var(--ok)'}">${num(sum('rest'))}</td>
+    </tr>` : '';
+    return body + totals;
+  }).join('');
+
+  $('tOrders').innerHTML =
+    '<tr><th>الطلب</th><th>الخدمة</th><th>السعر</th><th>المدفوع</th><th>الباقي</th><th>الزبون</th><th>الحالة</th><th>إجراءات</th></tr>' + rows;
+}
+
+async function upd(gid) {
+  const g = findGroup(gid);
+  if (!g.length) return;
+  const paids = g.map((o, i) => toNum($('p_' + gid + '_' + i).value));
+  showLoading();
+  try {
+    const r = await call('updateOrder', { id: gid, paid: paids.join(SEP), status: $('s_' + gid).value });
+    if (!r) return;
+    if (r.error) { alert(r.error); return; }
+    ORDERS = r.orders; drawOrders();
+  } finally { hideLoading(); }
+}
+async function delOrder(id) {
+  if (!confirm('حذف الطلب ' + id + '؟')) return;
+  const r = await call('deleteOrder', { id });
+  if (!r) return;
+  if (r.error) { alert(r.error); return; }
+  ORDERS = r.orders; drawOrders();
+}
+
+/* ============== التقارير ============== */
+async function drawReport() {
+  const r = await call('report'); if (!r || r.error) return;
+  const x = r.report;
+  $('stats').innerHTML = [['عدد الطلبات', x.count], ['إجمالي المبيعات', num(x.price)], ['إجمالي المدفوع', num(x.paid)], ['إجمالي المتبقي', num(x.rest)]]
+    .concat(STAT.map(s => ['طلبات ' + s, x.byStatus[s] || 0]))
+    .map(a => `<div class="stat">${a[0]}<b>${a[1]}</b></div>`).join('');
+}
+
+/* ============== المستخدمون ============== */
+async function setU(id, state, days) { await call('setUser', { id, state, days }); drawUsers(); }
+async function drawUsers() {
+  const r = await call('users'); if (!r || r.error) return;
+  $('tUsers').innerHTML = '<tr><th>المعرف</th><th>الهاتف</th><th>الاسم</th><th>الانتهاء</th><th>الحالة</th><th></th></tr>' +
+    r.users.map(u => `<tr><td>${esc(u.id)}</td><td>${esc(u.phone)}</td><td>${esc(u.name)}</td><td>${esc(u.expiry)}</td><td>${esc(u.state)}</td>
+    <td><button class="sec" onclick="setU('${esc(u.id)}','active')">تفعيل</button> <button class="sec" onclick="setU('${esc(u.id)}','trial',5)">+5 أيام</button></td></tr>`).join('');
+}
+
+/* ============== واتساب والفاتورة ============== */
+function waOrder(gid) {
+  const g = findGroup(gid);
+  if (!g.length) return;
+  const f = g[0];
+  let ph = String(f.phone || '').replace(/[٠-٩]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x0660 + 48)).replace(/\D/g, '');
+  if (ph.indexOf('00') === 0) ph = ph.slice(2);
+  if (ph.length === 8) ph = '968' + ph;
+  if (!ph) { alert('لا يوجد رقم هاتف لهذا الزبون'); return; }
+  const sum = k => g.reduce((s, o) => s + toNum(o[k]), 0);
+  const lines = ['مرحباً ' + f.customer + '،', 'تفاصيل طلبك رقم ' + f.id + ':', ''];
+  g.forEach((o, i) => lines.push((i + 1) + '- ' + o.name + ' | ' + num(o.price)));
+  lines.push('', 'الإجمالي: ' + num(sum('price')), 'المدفوع: ' + num(sum('paid')), 'الباقي: ' + num(sum('rest')), 'الحالة: ' + f.status, '', 'شكراً لتعاملكم معنا');
+  window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent(tr(lines.join('\n'))), '_blank');
+}
+
+function printInvoice(gid) {
+  const g = findGroup(gid);
+  if (!g.length) return;
+  const o = g[0];
+  const sum = k => g.reduce((s, x) => s + toNum(x[k]), 0);
+  let html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head><meta charset="utf-8">
+<title>فاتورة ${esc(o.id)}</title>
+<style>
+  body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;padding:28px;color:#222;max-width:720px;margin:auto}
+  h1{font-size:24px;margin:0 0 6px;text-align:center}
+  .sub{text-align:center;color:#777;font-size:13px;margin-bottom:18px}
+  .info{display:flex;justify-content:space-between;margin-bottom:14px;font-size:14px}
+  .info div{line-height:1.8}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{padding:10px;border:1px solid #ccc;text-align:right}
+  th{background:#f3f3f3}
+  .tot{margin-top:16px;font-size:16px}
+  .tot div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc}
+  .tot b:last-child{color:#3a5a8c}
+  .sign{margin-top:44px;display:flex;justify-content:space-between;font-size:13px;color:#555}
+  .sign div{border-top:1px solid #999;padding-top:6px;width:40%;text-align:center}
+  @media print{.no-print{display:none}}
+</style></head><body>
+  <h1>فاتورة طلب</h1>
+  <div class="sub">رقم الفاتورة: ${esc(o.id)} — التاريخ: ${esc(o.date)}</div>
+  <div class="info">
+    <div><b>الزبون:</b> ${esc(o.customer)}<br><b>الهاتف:</b> ${esc(o.phone || '—')}</div>
+    <div><b>الحالة:</b> ${esc(o.status)}</div>
+  </div>
+  <table>
+    <thead><tr><th>الخدمة</th><th>السعر</th></tr></thead>
+    <tbody>${g.map(x => `<tr><td>${esc(x.code)} - ${esc(x.name)}</td><td>${num(x.price)}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="tot">
+    <div><b>الإجمالي:</b><b>${num(sum('price'))}</b></div>
+    <div><b>المدفوع:</b><b>${num(sum('paid'))}</b></div>
+    <div><b>الباقي:</b><b>${num(sum('rest'))}</b></div>
+  </div>
+  <div class="sign"><div>توقيع الزبون</div><div>توقيع الصالون</div></div>
+  <div class="no-print" style="margin-top:26px;text-align:center">
+    <button onclick="window.print()" style="padding:10px 22px;font:inherit;cursor:pointer;border:0;border-radius:8px;background:#3a5a8c;color:#fff">طباعة</button>
+  </div>
+</body></html>`;
+  if (LANG === 'en') {
+    html = html.replace(/>([^<]+)</g, (m, t) => '>' + tr(t) + '<')
+      .replace('dir="rtl" lang="ar"', 'dir="ltr" lang="en"').replace('text-align:right', 'text-align:left');
+  }
+  const w = window.open('', '_blank');
+  if (!w) { alert('اسمح بالنوافذ المنبثقة لطباعة الفاتورة'); return; }
+  w.document.write(html); w.document.close();
+  setTimeout(() => w.print(), 300);
+}
+
+/* ================= تبديل اللغة ================= */
+const EN = {
+  'برنامج صالون الحلاقة':'Salon Program',
+  'سجّل الدخول، وإن كان رقمك جديداً سيتم إنشاء حسابك بفترة تجريبية 5 أيام':'Log in. If your number is new, an account will be created with a 5-day trial',
+  'رقم الهاتف':'Phone number','كلمة المرور':'Password','دخول':'Login','خروج':'Logout',
+  'انتهت الفترة التجريبية':'Trial period ended',
+  'انتهت الفترة التجريبية للبرنامج. لشراء البرنامج الرجاء التواصل مع الرقم 95209623':'The trial period has ended. To purchase the program please contact 95209623',
+  'إرسال رسالة واتساب لشراء البرنامج':'Send a WhatsApp message to buy the program',
+  'الصالون':'Salon','تسجيل طلب':'Register Order','التسجيل':'Register',
+  'رقم الخدمة':'Service no.','اسم الخدمة':'Service name','السعر':'Price','المدفوع':'Paid','الباقي':'Balance',
+  'اسم الزبون':'Customer name','حالة الطلب':'Order status','حفظ الطلب':'Save order',
+  'إضافة خدمة':'Add Service','إضافة':'Add','الخدمات':'Services','الخدمة':'Service',
+  'الطلبات':'Orders','طلبات':'Orders','التقارير':'Reports','المستخدمون':'Users',
+  'بحث باسم الزبون أو الهاتف أو الخدمة':'Search by customer, phone or service',
+  '— اختر —':'— Select —','الرقم':'No.','الاسم':'Name','إجراءات':'Actions',
+  'حفظ التعديل':'Save changes','حذف الخدمة رقم':'Delete service no.','حذف الخدمة':'Delete service',
+  'طباعة الفاتورة':'Print invoice','إرسال عبر واتساب':'Send via WhatsApp','حذف الطلب':'Delete order','حذف':'Delete',
+  'الطلب':'Order','الزبون':'Customer','الهاتف':'Phone','الحالة':'Status','المجموع':'Total',
+  'عدد الطلبات':'Orders count','إجمالي المبيعات':'Total sales','إجمالي المدفوع':'Total paid','إجمالي المتبقي':'Total remaining',
+  'المعرف':'ID','الانتهاء':'Expiry','تفعيل':'Activate','+5 أيام':'+5 days',
+  'نسخة مفعّلة':'Activated version','تجريبي حتى':'Trial until',
+  'جديد':'New','قيد التنفيذ':'In progress','مكتمل':'Completed',
+  'اختر الخدمة أولاً':'Select a service first','أدخل السعر':'Enter the price',
+  'أدخل اسم الزبون':'Enter customer name','أدخل اسم الخدمة':'Enter service name',
+  'أضف خدمة واحدة على الأقل':'Add at least one service',
+  'تم حفظ الطلب':'Order saved','تمت إضافة الخدمة':'Service added',
+  'تم تحديث الخدمة':'Service updated','تم حذف الخدمة':'Service deleted',
+  'اسمح بالنوافذ المنبثقة لطباعة الفاتورة':'Allow pop-ups to print the invoice',
+  'لا يوجد رقم هاتف لهذا الزبون':'This customer has no phone number',
+  'تعذر الاتصال بالخادم، تأكد من صحة API_USERS ومن نشر السكربت لـ Anyone':'Could not connect to the server. Check API_USERS and that the script is deployed for Anyone',
+  'تعذر الاتصال بالخادم':'Could not connect to the server',
+  'إجراء غير معروف:':'Unknown action:',
+  'لم يتم تعيين رابط سكربت لهذا الإجراء:':'No script URL set for this action:',
+  'فاتورة طلب':'Order Invoice','فاتورة':'Invoice','رقم الفاتورة':'Invoice no.','التاريخ':'Date',
+  'الإجمالي':'Total','توقيع الزبون':'Customer signature','توقيع الصالون':'Salon signature','طباعة':'Print',
+  'مرحباً':'Hello','تفاصيل طلبك رقم':'Your order details, no.','شكراً لتعاملكم معنا':'Thank you for your business',
+  'كلمة المرور غير صحيحة':'Incorrect password','أدخل رقم الهاتف وكلمة المرور':'Enter phone number and password',
+  'انتهت الجلسة، سجّل الدخول مرة أخرى':'Session expired, please log in again',
+  '،':',','؟':'?'
+};
+const EN_KEYS = Object.keys(EN).sort((a, b) => b.length - a.length);
+let LANG = 'ar';
+try { LANG = localStorage.getItem('barber_lang') || 'ar'; } catch (e) {}
+
+function tr(s) {
+  if (LANG !== 'en' || s == null) return s;
+  s = String(s);
+  const t = s.trim();
+  if (EN[t] !== undefined) return s.replace(t, () => EN[t]);
+  if (!/[\u0600-\u06FF]/.test(s)) return s;
+  let out = s;
+  for (const k of EN_KEYS) if (out.indexOf(k) !== -1) out = out.split(k).join(EN[k]);
+  return out;
+}
+const _alert = window.alert.bind(window), _confirm = window.confirm.bind(window);
+window.alert = m => _alert(tr(m));
+window.confirm = m => _confirm(tr(m));
+
+let _busy = false;
+function textNodes(root) {
+  const out = [];
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      const p = n.parentElement;
+      if (!p || p.closest('script,style,.lang-toggle')) return NodeFilter.FILTER_REJECT;
+      return /\S/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  while (w.nextNode()) out.push(w.currentNode);
+  return out;
+}
+function applyLang() {
+  _busy = true;
+  try {
+    const en = LANG === 'en';
+    const root = document.documentElement;
+    root.lang = en ? 'en' : 'ar'; root.dir = en ? 'ltr' : 'rtl';
+    document.title = en ? EN['برنامج صالون الحلاقة'] : 'برنامج صالون الحلاقة';
+    textNodes(document.body).forEach(n => {
+      if (n._en !== undefined && n.nodeValue === n._en) {
+        if (!en) { n.nodeValue = n._ar; delete n._en; }
+        return;
+      }
+      if (en) { n._ar = n.nodeValue; n._en = tr(n.nodeValue); n.nodeValue = n._en; }
+    });
+    document.querySelectorAll('[placeholder],[title]').forEach(el => {
+      ['placeholder', 'title'].forEach(a => {
+        if (!el.hasAttribute(a)) return;
+        const k = '_ar_' + a, ke = '_en_' + a, cur = el.getAttribute(a);
+        if (el[ke] !== undefined && cur === el[ke]) {
+          if (!en) { el.setAttribute(a, el[k]); delete el[ke]; }
+          return;
+        }
+        if (en) { el[k] = cur; el[ke] = tr(cur); el.setAttribute(a, el[ke]); }
+      });
+    });
+  } finally { _busy = false; mo.takeRecords(); }
+}
+let _langT = null;
+const mo = new MutationObserver(() => {
+  if (_busy || LANG !== 'en') return;
+  clearTimeout(_langT); _langT = setTimeout(applyLang, 0);
+});
+mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+function updLangBtn() { document.querySelectorAll('.langTxt').forEach(el => el.textContent = LANG === 'en' ? 'عربي' : 'EN'); }
+function toggleLang() {
+  LANG = LANG === 'en' ? 'ar' : 'en';
+  try { localStorage.setItem('barber_lang', LANG); } catch (e) {}
+  applyLang(); updLangBtn();
+}
+applyLang(); updLangBtn();
+
+
+/* ============================================================
+   تثبيت التطبيق (PWA)
+   ============================================================ */
+let deferredInstallPrompt = null;
+
+const isStandalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+function showInstallBar() {
+  if (isStandalone()) return;
+  document.getElementById('installBar').classList.add('show');
+  document.body.classList.add('has-install-bar');
+}
+
+function hideInstallBar() {
+  document.getElementById('installBar').classList.remove('show');
+  document.body.classList.remove('has-install-bar');
+}
+
+// أندرويد / كروم / إيدج
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBar();
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    hideInstallBar(false);
+  } else if (isIOS()) {
+    alert('لتثبيت التطبيق على الآيفون:\nاضغط زر المشاركة ⬆️ في سفاري\nثم اختر "إضافة إلى الشاشة الرئيسية"');
+  }
+});
+
+window.addEventListener('appinstalled', () => hideInstallBar(false));
+
+// آيفون: لا يوجد beforeinstallprompt، فنعرض الشريط يدوياً
+if (isIOS() && !isStandalone()) {
+  document.getElementById('installText').textContent = '📲 للتثبيت: مشاركة ⬆️ ← إضافة إلى الشاشة الرئيسية';
+  document.getElementById('installBtn').textContent = 'كيف؟';
+  setTimeout(showInstallBar, 2500);
+}
+
+// تسجيل الـ Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>
